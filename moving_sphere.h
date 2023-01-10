@@ -4,6 +4,7 @@
 #include "rtweekend.h"
 
 #include "hittable.h"
+#include "aabb.h"
 
 class moving_sphere : public hittable {
     public:
