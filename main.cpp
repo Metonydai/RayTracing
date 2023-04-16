@@ -10,6 +10,7 @@
 #include "material.h"
 #include "moving_sphere.h"
 #include "box.h"
+#include "constant_medium.h"
 
 hittable_list random_scene(){
     hittable_list world;
@@ -138,6 +139,35 @@ hittable_list cornell_box() {
     return objects;
 }
 
+hittable_list cornell_smoke() {
+    hittable_list objects;
+
+    auto red   = make_shared<lambertian>(color(.65, .05, .05));
+    auto white = make_shared<lambertian>(color(.73, .73, .73));
+    auto green = make_shared<lambertian>(color(.12, .45, .15));
+    auto light = make_shared<diffuse_light>(color(15, 15, 15));
+
+    objects.add(make_shared<yz_rect>(0, 555, 0, 555, 555, green));
+    objects.add(make_shared<yz_rect>(0, 555, 0, 555, 0, red));
+    objects.add(make_shared<xz_rect>(213, 343, 227, 332, 554, light));
+    objects.add(make_shared<xz_rect>(0, 555, 0, 555, 0, white));
+    objects.add(make_shared<xz_rect>(0, 555, 0, 555, 555, white));
+    objects.add(make_shared<xy_rect>(0, 555, 0, 555, 555, white));
+
+    shared_ptr<hittable> box1 = make_shared<box>(point3(0, 0, 0), point3(165, 330, 165), white);
+    box1 = make_shared<rotate_y>(box1, 15);
+    box1 = make_shared<translate>(box1, vec3(265, 0, 295));
+
+    shared_ptr<hittable> box2 = make_shared<box>(point3(0, 0, 0), point3(165, 165, 165), white);
+    box2 = make_shared<rotate_y>(box2, -18);
+    box2 = make_shared<translate>(box2, vec3(130, 0, 65));
+
+    objects.add(make_shared<constant_medium>(box1, 0.01, color(0,0,0)));
+    objects.add(make_shared<constant_medium>(box2, 0.01, color(1,1,1)));
+
+    return objects;
+}
+
 color ray_color(const ray& r, const color& background, const hittable& world, int depth){
     hit_record rec;
     
@@ -227,7 +257,6 @@ int main(){
             vfov = 20.0;
             break;
 
-		default:
         case 6:
             world = cornell_box();
             aspect_ratio = 1.0;
@@ -239,6 +268,19 @@ int main(){
             lookat = point3(278, 278, 0);
             vfov = 40.0;
             break;
+
+		default:
+        case 7:
+            world = cornell_smoke();
+            aspect_ratio = 1.0;
+            image_width = 600;
+            image_height = static_cast<int>(image_width / aspect_ratio);
+            samples_per_pixel = 200;
+            lookfrom = point3(278, 278, -800);
+            lookat = point3(278, 278, 0);
+            vfov = 40.0;
+            break;
+
 	}
 
     // Camera
