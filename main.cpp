@@ -244,12 +244,17 @@ color ray_color(const ray& r, const color& background, const hittable& world, in
     
     ray scattered;
     color attenuation;
-    color emitted = rec.mat_ptr->emitted(rec.u, rec.v, rec.p);
+    color color_from_emission = rec.mat_ptr->emitted(rec.u, rec.v, rec.p);
 
     if (!rec.mat_ptr->scatter(r, rec, attenuation, scattered))
-        return emitted;
+        return color_from_emission;
+
+    double scattering_pdf = rec.mat_ptr->scattering_pdf(r, rec, scattered);
+    double pdf = scattering_pdf;
+
+    color color_from_scatter = (attenuation * scattering_pdf * ray_color(scattered, background, world, depth-1)) / pdf;
     
-    return emitted + attenuation * ray_color(scattered, background, world, depth-1);
+    return color_from_emission + color_from_scatter;
 }
 
 int main(){
@@ -276,7 +281,7 @@ int main(){
 	auto aperture = 0.0;
     color background(0,0,0);
 
-	switch (0) {
+	switch (9) {
 		case 1:
 			world = random_scene();
             background = color(0.70, 0.80, 1.00);
@@ -343,7 +348,6 @@ int main(){
             vfov = 40.0;
             break;
 
-		default:
         case 8:
             world = final_scene();
             aspect_ratio = 1.0;
@@ -354,14 +358,26 @@ int main(){
             lookat = point3(278, 278, 0);
             vfov = 40.0;
             break;
+        case 9:
+		default:
+            world = cornell_box();
+            aspect_ratio = 1.0 / 1.0;
+            image_width = 600;
+            image_height = static_cast<int>(image_width / aspect_ratio);
+            samples_per_pixel = 100;
+            lookfrom = point3(278, 278, -800);
+            lookat = point3(278, 278, 0);
+            vfov = 40.0;
 
 	}
 
     // Camera
     vec3 vup(0,1,0);
     auto dist_to_focus = 10.0;
+    auto time0 = 0.0;
+    auto time1 = 1.0;
 
-    camera cam(lookfrom, lookat, vup, vfov, aspect_ratio, aperture, dist_to_focus, 0.0, 1.0);
+    camera cam(lookfrom, lookat, vup, vfov, aspect_ratio, aperture, dist_to_focus, time0, time1);
 
 	// Render
 	

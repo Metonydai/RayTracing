@@ -12,8 +12,16 @@ class material {
         }
 
         virtual bool scatter(
-                const ray& r_in, const hit_record& rec, color& attenuation, ray& scattered
-                ) const = 0;
+            const ray& r_in, const hit_record& rec, color& attenuation, ray& scattered
+        ) const {
+            return false;
+        }
+        
+        virtual double scattering_pdf(
+            const ray& r_in, const hit_record& rec, const ray& scattered
+        ) const {
+            return 0;
+        } 
 };
 
 class lambertian : public material {
@@ -21,8 +29,9 @@ class lambertian : public material {
 		lambertian(const color& a) : albedo(make_shared<solid_color>(a)) {}
 		lambertian(shared_ptr<texture> a) : albedo(a) {}
 
-        virtual bool scatter( const ray& r_in, const hit_record& rec, color& attenuation, 
-                ray& scattered) const override {
+        virtual bool scatter( 
+                const ray& r_in, const hit_record& rec, color& attenuation, ray& scattered
+            ) const override {
             auto scatter_direction = rec.normal + random_unit_vector();
             //auto scatter_direction = random_unit_vector_hemisphere(rec.normal);
 
@@ -35,6 +44,12 @@ class lambertian : public material {
             attenuation = albedo->value(rec.u, rec.v, rec.p);
             return true;
         }
+
+        double scattering_pdf(const ray& r_in, const hit_record& rec, const ray& scattered) const{
+            auto cos_theta = dot(rec.normal, unit_vector(scattered.direction()));
+            return cos_theta < 0 ? 0 : cos_theta/pi;
+        }
+
     public:
 		shared_ptr<texture> albedo;
 };
