@@ -1,6 +1,6 @@
-# Project Name
+# Raytracing
 
-Raytracing
+![final_scene](https://github.com/Metonydai/RayTracing/blob/master/resources/TheNextWeek_final_scene.png?raw=true "final_scene")
 
 ## Requirements
 
